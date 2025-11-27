@@ -1,0 +1,8 @@
+```{r}
+library(wooldridge)
+
+summary(k401k$prate)
+summary(k401k$mrate)
+
+```
+

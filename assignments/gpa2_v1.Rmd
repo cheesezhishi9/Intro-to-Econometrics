@@ -1,0 +1,18 @@
+```{r}
+load("/Users/wangjiayu/Downloads/gpa2_v1.RData")
+ls()
+
+y <- Data$colgpa
+x1 <- Data$hsize
+x2 <- (Data$hsize) ^ 2
+x3 <- Data$hsperc
+x4 <- Data$sat
+x5 <- Data$female
+x6 <- (Data$female) * (Data$sat)
+x7 <- Data$athlete
+
+data_perfect <- data.frame(x1,x2,x3,x4,x5,x6,x7,y)
+model_perfect <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7, data = data_perfect)
+summary(model_perfect)
+```
+

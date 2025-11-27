@@ -1,0 +1,27 @@
+```{r}
+load("/Users/wangjiayu/Downloads/loanapp_v5.RData")
+ls()
+
+x1 <- Data$white
+x2 <- Data$hrat
+x3 <- Data$obrat
+x4 <- Data$loanprc
+x5 <- Data$unem
+x6 <- Data$male
+x7 <- Data$married
+x8 <- Data$dep
+x9 <- Data$sch
+x10 <- Data$cosign
+x11 <- Data$chist
+x12 <- Data$pubrec
+x13 <- Data$mortlat1
+x14 <- Data$mortlat2
+x15 <- Data$vr
+x16 <- (Data$obrat - 32) * (Data$white)
+y <- Data$approve
+
+data_perfect <- data.frame(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,y)
+model_perfect <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + x16, data = data_perfect)
+summary(model_perfect)
+```
+

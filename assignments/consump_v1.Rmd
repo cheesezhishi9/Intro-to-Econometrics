@@ -1,0 +1,9 @@
+```{r}
+load("/Users/wangjiayu/Downloads/consump_v1.RData")
+ls()
+
+model <- lm(gc ~ gy, data = data)
+
+summary(model)
+```
+

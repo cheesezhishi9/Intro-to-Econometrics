@@ -1,0 +1,69 @@
+```{r}
+load("/Users/wangjiayu/Downloads/crime1_v3.RData")
+ls()
+
+# Load data
+# Load data
+load("/Users/wangjiayu/Downloads/crime1_v3.RData")
+
+# Create binary dependent variable
+arr86 <- ifelse(Data$narr86 > 0, 1, 0)
+y <- arr86
+
+# Explanatory variables
+x1 <- Data$pcnv
+x2 <- Data$avgsen
+x3 <- Data$tottime
+x4 <- Data$ptime86
+x5 <- Data$qemp86
+
+# Combine into data frame
+data_perfect <- data.frame(y, x1, x2, x3, x4, x5)
+
+# --- (i) OLS Regression ---
+model_ols <- lm(y ~ x1 + x2 + x3 + x4 + x5, data = data_perfect)
+summary(model_ols)
+
+# Fitted value range
+fitted_vals <- fitted(model_ols)
+cat("Smallest fitted value:", round(min(fitted_vals), 4), "\n")
+cat("Largest fitted value:", round(max(fitted_vals), 4), "\n")
+
+
+model_initial <- lm(y ~ x1 + x2 + x3 + x4 + x5)
+arr86_hat <- fitted(model_initial)
+
+# Step 3: Compute h_hat
+h_hat <- arr86_hat * (1 - arr86_hat)
+
+# Step 4: Manually transform variables by 1/sqrt(h_hat)
+y_star <- y / sqrt(h_hat)
+x0_star <- 1 / sqrt(h_hat)  # Intercept term
+x1_star <- x1 / sqrt(h_hat)
+x2_star <- x2 / sqrt(h_hat)
+x3_star <- x3 / sqrt(h_hat)
+x4_star <- x4 / sqrt(h_hat)
+x5_star <- x5 / sqrt(h_hat)
+
+# Step 5: Run OLS on the transformed variables including the transformed intercept
+data_star <- data.frame(y_star, x0_star, x1_star, x2_star, x3_star, x4_star, x5_star)
+model_wls_transformed <- lm(y_star ~ 0 + x0_star + x1_star + x2_star + x3_star + x4_star + x5_star, data = data_star)
+
+model_full <- lm(y_star ~ 0 + x0_star + x1_star + x2_star + x3_star + x4_star + x5_star, data = data_star)
+
+# Step 6: View results
+summary(model_wls_transformed)
+
+model_restricted <- lm(y_star ~ 0 + x0_star + x1_star + x4_star + x5_star, data = data_star)
+
+# Step 8: Perform F-test for joint significance of x2 and x3
+anova_result <- anova(model_restricted, model_full)
+
+# Step 9: Display results
+summary(model_restricted)
+print(anova_result)
+
+
+
+```
+

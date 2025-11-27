@@ -1,0 +1,19 @@
+```{r}
+load("/Users/wangjiayu/Downloads/kielmc_v4.RData")
+
+y <- Data$lprice
+x1 <- Data$ldist
+x2 <- Data$lintst
+x3 <- Data$larea
+x4 <- Data$lland
+x5 <- Data$rooms
+x6 <- Data$baths
+x7 <- Data$age
+x8 <- (Data$lintst) ^ 2
+x9 <- (Data$ldist) ^ 2
+data_perfect <- data.frame(x1,y)
+model_perfect <- lm(y ~ x1, data = data_perfect)
+summary(model_perfect)
+```
+```
+

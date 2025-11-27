@@ -1,0 +1,177 @@
+```{r}
+load("/Users/wangjiayu/Downloads/vote1_v1.RData")
+ls()
+x1 <- Data$prtystrA
+x2 <- Data$democA
+x3 <- Data$lexpendA
+x4 <- Data$lexpendB
+y <- Data$voteA
+data_perfect <- data.frame(x1,x2,x3,x4,y)
+model_perfect <- lm(y ~ x1 + x2 + x3 + x4, data = data_perfect)
+summary(model_perfect)
+
+u_hat <- resid(model_perfect)
+
+# Regress residuals on all independent variables
+resid_model <- lm(u_hat ~ x1 + x2 + x3 + x4, data = data_perfect)
+
+# View summary to see R-squared
+summary(resid_model)
+
+model <- lm(y ~ x1 + x2 + x3 + x4, data = data_perfect)
+u2 <- resid(model)^2
+
+# Step 2: Auxiliary regression of u² on independent vars
+aux_model <- lm(u2 ~ x1 + x2 + x3 + x4, data = data_perfect)
+
+# Step 3: Get F-statistic from summary
+summary(aux_model)$fstatistic
+fstat <- summary(aux_model)$fstatistic
+f_value <- fstat["value"]
+df1 <- fstat["numdf"]
+df2 <- fstat["dendf"]
+
+# Compute p-value
+pval <- pf(f_value, df1, df2, lower.tail = FALSE)
+
+# Output results
+cat("F-statistic =", round(f_value, 4), "\n")
+cat("p-value =", round(pval, 4), "\n")
+
+# Step 1: Fit the original model with all 4 predictors
+model <- lm(y ~ x1 + x2 + x3 + x4, data = data_perfect)
+
+# Step 2: Get squared residuals
+u2 <- resid(model)^2
+
+# Step 3: Build a data frame of the independent variables
+X <- data.frame(
+  x1 = data_perfect$x1,
+  x2 = data_perfect$x2,
+  x3 = data_perfect$x3,
+  x4 = data_perfect$x4
+)
+
+# Step 4: Create squares of each variable
+X_sq <- X^2
+names(X_sq) <- paste0(names(X), "_sq")
+
+# Step 5: Create all pairwise cross-products
+X_cross <- data.frame(
+  x1x2 = X$x1 * X$x2,
+  x1x3 = X$x1 * X$x3,
+  x1x4 = X$x1 * X$x4,
+  x2x3 = X$x2 * X$x3,
+  x2x4 = X$x2 * X$x4,
+  x3x4 = X$x3 * X$x4
+)
+
+# Step 6: Combine all variables into White test design
+white_df <- cbind(X, X_sq, X_cross, u2 = u2)
+
+# Step 7: Run auxiliary regression
+aux_model <- lm(u2 ~ ., data = white_df)
+
+# Step 8: Extract F-statistic and compute p-value
+fstat <- summary(aux_model)$fstatistic
+f_value <- fstat["value"]
+df1 <- fstat["numdf"]
+df2 <- fstat["dendf"]
+p_val <- pf(f_value, df1, df2, lower.tail = FALSE)
+
+# Step 9: Output the result
+cat("White test F-statistic =", round(f_value, 4), "\n")
+cat("p-value =", round(p_val, 5), "\n")
+
+if (p_val < 0.05) {
+  cat("At the 5% significance level, there IS evidence of heteroskedasticity.\n")
+} else {
+  cat("At the 5% significance level, there is NO evidence of heteroskedasticity.\n")
+}
+
+# Step 1: Fit the original model with all 4 predictors
+model <- lm(y ~ x1 + x2 + x3 + x4, data = data_perfect)
+
+# Step 2: Get squared residuals
+u2 <- resid(model)^2
+
+# Step 3: Build a data frame of the independent variables
+X <- data.frame(
+  x1 = data_perfect$x1,
+  x2 = data_perfect$x2,
+  x3 = data_perfect$x3,
+  x4 = data_perfect$x4
+)
+
+# Step 4: Create only the squared terms
+X_sq <- X^2
+names(X_sq) <- paste0(names(X), "_sq")
+
+# Step 5: Combine original regressors and their squares
+white_df_simple <- cbind(X, X_sq, u2 = u2)
+
+# Step 6: Auxiliary regression for White test
+aux_model_simple <- lm(u2 ~ ., data = white_df_simple)
+
+# Step 7: Extract F-statistic and compute p-value
+fstat <- summary(aux_model_simple)$fstatistic
+f_value <- fstat["value"]
+df1 <- fstat["numdf"]
+df2 <- fstat["dendf"]
+p_val <- pf(f_value, df1, df2, lower.tail = FALSE)
+
+# Step 8: Output result
+cat("Simplified White test (squares only)\n")
+cat("F-statistic =", round(f_value, 4), "\n")
+cat("p-value =", round(p_val, 5), "\n")
+
+if (p_val < 0.05) {
+  cat("At the 5% significance level, there IS evidence of heteroskedasticity.\n")
+} else {
+  cat("At the 5% significance level, there is NO evidence of heteroskedasticity.\n")
+}
+
+# Step 1: Fit the original model with 4 regressors
+model <- lm(y ~ x1 + x2, data = data_perfect)
+
+# Step 2: Get squared residuals
+u2 <- resid(model)^2
+
+# Step 3: Construct original regressors
+X <- data.frame(
+  x1 = data_perfect$x1,
+  x2 = data_perfect$x2
+)
+
+# Step 4: Construct squares only (special White test form)
+X_sq <- X^2
+names(X_sq) <- paste0(names(X), "_sq")
+
+# Step 5: Combine original regressors and their squares into one data frame
+white_data_special <- cbind(X, X_sq, u2 = u2)
+
+# Step 6: Run auxiliary regression: u² ~ original + squares
+aux_model <- lm(u2 ~ ., data = white_data_special)
+
+# Step 7: Extract F-statistic and compute p-value
+fstat <- summary(aux_model)$fstatistic
+f_value <- fstat["value"]
+df1 <- fstat["numdf"]
+df2 <- fstat["dendf"]
+p_val <- pf(f_value, df1, df2, lower.tail = FALSE)
+
+# Step 8: Display result
+cat("White Test (Special Case – Squares Only)\n")
+cat("F-statistic:", round(f_value, 4), "\n")
+cat("p-value:", round(p_val, 5), "\n")
+
+if (p_val < 0.05) {
+  cat("→ At the 5% level: evidence of heteroskedasticity.\n")
+} else {
+  cat("→ At the 5% level: no evidence of heteroskedasticity.\n")
+}
+
+
+
+```
+

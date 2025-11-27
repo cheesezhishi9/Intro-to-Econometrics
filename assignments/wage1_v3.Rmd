@@ -1,0 +1,21 @@
+```{r}
+# Load the file
+load("/Users/wangjiayu/Downloads/wage1_v3.RData")
+
+# Check object names
+ls()
+
+# Use the correct object name
+x1 <- Data$educ
+x2 <- Data$exper
+x3 <- Data$tenure
+y <- log(Data$wage)
+
+# Create dataframe and run the model
+data_perfect <- data.frame(x1, x2, x3, y)
+model_perfect <- lm(y ~ x1 + x2 + x3, data = data_perfect)
+summary(model_perfect)
+
+
+```
+

@@ -1,0 +1,28 @@
+```{r}
+library(wooldridge)
+library(tidyverse)
+
+summary(meap01$math4)
+
+summary(meap01$exppp)
+
+summary(meap01)
+
+sum(meap01$math4 == 100)
+
+sum(meap01$math4 == 100)/length(meap01$math4)
+
+sum(meap01$math4 == 50)
+
+summary(meap01$read4)
+
+cor(meap01$math4,meap01$read4)
+
+sd(meap01$exppp)
+
+sd(meap01$exppp) / mean(meap01$exppp)
+
+
+
+```
+
