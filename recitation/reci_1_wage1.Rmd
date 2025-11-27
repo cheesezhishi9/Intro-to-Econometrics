@@ -1,0 +1,63 @@
+---
+title: "Reci_1"
+author: "Jiayu Wang"
+date: "2025-01-30"
+output: html_document
+---
+
+```{r wage1,echo = TRUE}
+library(wooldridge)
+library(tidyverse)
+
+data(wage1)
+#summary(wage1)
+
+#suammry education level
+summary(wage1$educ)
+
+#use tidyverse to summarize education level
+wage1 %>% 
+  summarize(mean(educ),max(educ),min(educ))
+
+#the average education level in the sample
+mean(wage1$educ)
+
+#the highest years of education
+max(wage1$educ)
+
+#the lowest years of education
+min(wage1$educ)
+
+#the average hourly wage
+mean(wage1$wage)
+
+#calculating average hourly age for year 2023
+cpi76 = 56.9
+cpi23 = 304.7
+conversion_factor = cpi23/cpi76
+conversion_factor
+mean(wage1$wage)*conversion_factor
+
+#creating a new column in the table of wage1 by multiplying the value of conversion_factor to each entry in the column wage
+wage1$real_wage = wage1$wage * conversion_factor
+summary(wage1$real_wage)
+
+#the number of female in the sample
+female_num = sum(wage1$female)
+female_num
+
+#the number of male in the sample
+male_num = length(wage1$female) - sum(wage1$female)
+male_num
+```
+
+(1) The average education level in the sample is `r mean(wage1$educ)` years. The highest year of education is `r max(wage1$educ)` years. The lowest year of education is `r min(wage1$educ)` years.
+
+(2) The average hourly wage in the sample is `r mean(wage1$wage)`. It seems low.
+
+(3) CPI for year 1976 is 56.9; CPI for year 2023 is 304.7.
+
+(4) The average hourly wage for year 2023 is `r mean(wage1$wage)*304.7/56.9`. It seems resonable.
+
+(5) There are `r sum(wage1$female)` women in the sample. There are `r length(wage1$female) - sum(wage1$female)` men in the sample.
+

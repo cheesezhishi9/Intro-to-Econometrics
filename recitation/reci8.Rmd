@@ -1,0 +1,49 @@
+```{r}
+library(AER)
+set.seed(123)
+
+# Sample size
+n <- 10000
+
+# Generate variables
+Z <- rnorm(n, 0, 1)                          # Instrument
+U <- rnorm(n, 10, sqrt(10))                 # Confounder
+e <- rnorm(n, 0, 1)                         # Error term
+X <- rnorm(n, 0, 1) + 3 * Z + U             # Endogenous regressor
+Y <- 2 * X + U + e                          # Outcome
+
+# Data frame
+df <- data.frame(Y, X, Z, U)
+
+# (1) OLS regression (biased due to omitted U)
+ols_model <- lm(Y ~ X, data = df)
+summary(ols_model)
+
+# (2) First stage of 2SLS: regress X on Z
+stage1 <- lm(X ~ Z, data = df)
+df$X_hat <- predict(stage1)
+
+# Second stage: regress Y on predicted X
+stage2 <- lm(Y ~ X_hat, data = df)
+summary(stage2)
+
+# (3) Alternative way (manual 2SLS using matrix formula)
+library(MASS)
+Z_matrix <- cbind(1, df$Z)       # Instrument matrix
+X_matrix <- cbind(1, df$X)       # Regressor matrix
+Y_vector <- df$Y
+
+# Project X onto Z
+PZ <- Z_matrix %*% solve(t(Z_matrix) %*% Z_matrix) %*% t(Z_matrix)
+X_proj <- PZ %*% df$X
+Y_proj <- PZ %*% df$Y
+beta_manual <- solve(t(X_proj) %*% X_proj) %*% t(X_proj) %*% Y_proj
+beta_manual
+
+# (4) Using AER package for IV
+library(AER)
+iv_model <- ivreg(Y ~ X | Z, data = df)
+summary(iv_model)
+
+```
+

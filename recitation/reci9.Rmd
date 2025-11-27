@@ -1,0 +1,104 @@
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lmtest)
+
+set.seed(123)
+
+n <- 100
+T <- 20
+treatment_year <- 10
+
+year = rep(1 : T, times = n)
+treatment = round(runif(n*T,0,1))
+U = rnorm(T*n,5,1)
+outcome = ifelse(rep(1:T,times = n) > treatment_year & treatment == 1, rnorm(T*n,mean = 2) + U,rnorm(T*n,mean = 1)+ U)
+
+post = ifelse(year > treatment_year,1,0)
+data <- data.frame(year,post,treatment, outcome)
+```
+
+```{r}
+data_avg <- data %>%
+  group_by(year, treatment) %>%
+  summarise(mean_outcome = mean(outcome), .groups = 'drop')
+
+ggplot(data_avg, aes(x = year, y = mean_outcome, color = factor(treatment))) +
+  geom_line(size = 1.2) +
+  labs(title = "Parallel Trends: Treatment vs Control",
+       x = "Year", y = "Average Outcome",
+       color = "Treatment Group") +
+  theme_minimal()
+```
+
+```{r}
+data$did <- data$treatment * data$post
+
+did_model <- lm(outcome ~ treatment + post + did, data = data)
+summary(did_model)
+```
+
+```{r}
+n <- 500
+running_variable <- runif(n,min = 0, max = 10)
+cutoff <- 5
+treatment <- ifelse(running_variable >= cutoff,1,0)
+outcome <- ifelse(running_variable >= cutoff,
+                  2 + 0.5 * (running_variable - cutoff) - 0.1 * (running_variable - cutoff) ^ 2 + rnorm(n,mean = 0, sd = 1),
+                  -2 + 0.5 * (running_variable - cutoff) - 0.1 * (running_variable - cutoff) ^ 2 + rnorm(n,mean = 0, sd = 1))
+
+data <- data.frame(Running_variable = running_variable,
+                   Treatment = treatment,
+                   Outcome = outcome)
+
+plot(data$Running_variable, data$Outcome, col = ifelse(data$Treatment == 1, 'red','blue'),xlab = 'Running_variable', ylab = 'Outcome', main = 'Simulated Data for RDD')
+abline(v = cutoff, lty = 2, col = 'green')
+legend('topright',legend = c('Treatment = 0','Treatment = 1','Cutoff'), col = c('blue','red','green'),lty = c(1,1,2))
+```
+
+```{r}
+plot(data$Running_variable, data$Outcome,
+     col = ifelse(data$Treatment == 1, 'red', 'blue'),
+     xlab = 'Running_variable', ylab = 'Outcome',
+     main = 'Simulated Data for RDD')
+
+abline(v = cutoff, lty = 2, col = 'green')
+legend('topright',
+       legend = c('Treatment = 0','Treatment = 1','Cutoff'),
+       col = c('blue','red','green'), lty = c(1,1,2))
+
+# Fit the regressions
+left <- subset(data, Running_variable < cutoff)
+right <- subset(data, Running_variable >= cutoff)
+
+fit_left <- lm(Outcome ~ Running_variable, data = left)
+fit_right <- lm(Outcome ~ Running_variable, data = right)
+
+# Add fitted lines
+abline(fit_left, col = 'blue', lwd = 2)
+abline(fit_right, col = 'red', lwd = 2)
+```
+
+```{r}
+pred_left <- predict(fit_left, newdata = data.frame(Running_variable = cutoff))
+pred_right <- predict(fit_right, newdata = data.frame(Running_variable = cutoff))
+
+ATE <- pred_right - pred_left
+ATE
+```
+
+```{r}
+# Load the package
+library(rddtools)
+
+# Prepare the RDD data
+rdd_data <- rdd_data(y = data$Outcome, x = data$Running_variable, cutpoint = cutoff)
+
+# Run polynomial regression of order 2
+model_poly2 <- rdd_reg_lm(rdd_object = rdd_data, order = 2)
+
+# Summary of results
+summary(model_poly2)
+
+```
+

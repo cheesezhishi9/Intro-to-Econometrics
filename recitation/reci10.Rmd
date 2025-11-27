@@ -1,0 +1,29 @@
+```{r}
+library(tidyquant)
+goog = tq_get('GOOG',get = 'stock.prices', from = '1997-01-01') %>%
+  tq_transmute(mutate_fun = to.period, period = 'months')
+
+library(ggplot2)
+ggplot(goog, aes(date, close)) + geom_line()
+
+plot(diff(log(goog$close)), type = 'l', main = 'log returns plot')
+
+library(tseries)
+adf.test(diff(log(goog$close)), alternative = 'stationary', k = 0)
+acf(diff(log(goog$close)))
+pacf(diff(log(goog$close)))
+
+library(forecast)
+(fit <- arima(diff(log(goog$close)), c(3,0,1)))
+fitARIMA <- auto.arima(diff(log(goog$close)),trace = TRUE)
+
+plot(as.ts(diff(log(goog$close))))
+lines(fitted(fitARIMA),col = 'red')
+
+futurVal <- forecast(fitARIMA, h = 25, level = c(99))
+plot(forecast(futurVal))
+
+futurVal$mean
+
+```
+
